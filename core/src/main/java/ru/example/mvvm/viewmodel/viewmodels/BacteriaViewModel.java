@@ -9,10 +9,9 @@ import ru.example.mvvm.viewmodel.SpecifiedViewModel;
 
 public class BacteriaViewModel extends SpecifiedViewModel<Bacteria> implements EventListener {
     private Vector2 position;
-    private float cellSize;
+    private Vector2 cellSize;
     private EventBus eventBus;
-    private float screenWidth;
-    private float screenHeight;
+
 
     @Override
     public void setEventBus(EventBus eventBus) {
@@ -23,9 +22,6 @@ public class BacteriaViewModel extends SpecifiedViewModel<Bacteria> implements E
     @Override
     public void handleEvent(Event event) {
         if ("WINDOW_RESIZED".equals(event.getType())) {
-            int[] dimensions = (int[]) event.getData();
-            this.screenWidth = dimensions[0];
-            this.screenHeight = dimensions[1];
         }
     }
 
@@ -39,15 +35,20 @@ public class BacteriaViewModel extends SpecifiedViewModel<Bacteria> implements E
     @Override
     protected void updateCasted(Bacteria entity) {
         this.position = entity.getPosition();
+       // float size = entity.getCellSize();
         this.cellSize = entity.getCellSize();
     }
 //контекст который будет передаваться в updateCasted, для grid установить размер клетки, а потом этот же контекст передаем дальше
     @Override
     public void drawShape(ShapeRenderer shapeRenderer) {
         // Бактерия занимает 80% клетки
-        float size = cellSize * 0.8f;
-        float x = position.x * cellSize + (cellSize - size) / 2;
-        float y = position.y * cellSize + (cellSize - size) / 2;
+        float centerX = position.x * cellSize.x + cellSize.x / 2;
+        float centerY = position.y * cellSize.y + cellSize.y / 2;
 
+
+        float size = Math.min(cellSize.x, cellSize.y) * 0.8f;
+
+        shapeRenderer.setColor(0.8f, 0.2f, 0.2f, 1f);
+        shapeRenderer.circle(centerX, centerY, size/2);
     }
 }

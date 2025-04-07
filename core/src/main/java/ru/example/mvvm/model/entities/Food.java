@@ -7,10 +7,10 @@ import ru.example.mvvm.model.ModelContext;
 public class Food extends BaseEntity {
     private final Vector2 position;
     private final float nutritionValue;
-    private float cellSize;
+    private Vector2 cellSize;
     private static final float MIN_SIZE_RATIO = 0.3f; // Минимум 30% от клетки
 
-    public Food(int id, Vector2 position, float nutritionValue, float cellSize) {
+    public Food(int id, Vector2 position, float nutritionValue, Vector2 cellSize) {
         super(id);
         this.position = position;
         this.nutritionValue = nutritionValue;
@@ -27,7 +27,7 @@ public class Food extends BaseEntity {
     public float getNutritionValue() {
         return nutritionValue;
     }
-    public float getCellSize() {
+    public Vector2 getCellSize() {
         return cellSize;
     }
 }

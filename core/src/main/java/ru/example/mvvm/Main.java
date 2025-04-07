@@ -60,13 +60,18 @@ public class Main extends ApplicationAdapter {
     }
 
     private void spawnInitialEntities() {
+        Vector2 cellSize = new Vector2(
+            Gdx.graphics.getWidth() / (float)GRID_WIDTH,
+            Gdx.graphics.getHeight() / (float)GRID_HEIGHT
+        );
+
         for (int i = 0; i < 10; i++) {
             Vector2 pos = getRandomGridPosition();
             gameModel.addEntity(new Bacteria(
                 gameModel.getNextId(),
                 pos,
                 MathUtils.random(50f, 100f),
-                CELL_SIZE
+                cellSize // Передаем Vector2
             ));
         }
 
@@ -76,7 +81,7 @@ public class Main extends ApplicationAdapter {
                 gameModel.getNextId(),
                 pos,
                 MathUtils.random(30f, 50f),
-                CELL_SIZE
+                cellSize // Передаем Vector2
             ));
         }
     }

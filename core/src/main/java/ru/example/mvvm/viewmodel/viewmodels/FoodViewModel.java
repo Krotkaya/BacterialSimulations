@@ -1,4 +1,5 @@
 package ru.example.mvvm.viewmodel.viewmodels;
+
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import ru.example.mvvm.eventbus.Event;
@@ -7,13 +8,11 @@ import ru.example.mvvm.eventbus.EventListener;
 import ru.example.mvvm.model.entities.Food;
 import ru.example.mvvm.viewmodel.SpecifiedViewModel;
 
-public class FoodViewModel extends SpecifiedViewModel<Food>  implements EventListener {
-    private Vector2 position;
+public class FoodViewModel extends SpecifiedViewModel<Food> implements EventListener {
+    private Vector2 position; // Позиция в сетке (целые числа)
     private float nutritionValue;
-    private float cellSize;
+    private Vector2 cellSize; // Теперь Vector2 вместо float
     private EventBus eventBus;
-    private float screenWidth;
-    private float screenHeight;
 
     @Override
     public void setEventBus(EventBus eventBus) {
@@ -24,9 +23,7 @@ public class FoodViewModel extends SpecifiedViewModel<Food>  implements EventLis
     @Override
     public void handleEvent(Event event) {
         if ("WINDOW_RESIZED".equals(event.getType())) {
-            int[] dimensions = (int[]) event.getData();
-            this.screenWidth = dimensions[0];
-            this.screenHeight = dimensions[1];
+            // Размер клетки будет обновляться через updateCasted
         }
     }
 
@@ -39,19 +36,23 @@ public class FoodViewModel extends SpecifiedViewModel<Food>  implements EventLis
     protected void updateCasted(Food entity) {
         this.position = entity.getPosition();
         this.nutritionValue = entity.getNutritionValue();
+        // Получаем размер клетки как float и создаем Vector2
         this.cellSize = entity.getCellSize();
     }
 
     @Override
     public void drawShape(ShapeRenderer shapeRenderer) {
-        float minSize = cellSize * 0.2f;
-        float maxSize = cellSize * 0.7f;
+        // Рассчитываем позицию центра клетки
+        float centerX = position.x * cellSize.x + cellSize.x / 2;
+        float centerY = position.y * cellSize.y + cellSize.y / 2;
+
+        // Размер еды (20-70% от меньшей стороны клетки)
+        float minSize = Math.min(cellSize.x, cellSize.y) * 0.2f;
+        float maxSize = Math.min(cellSize.x, cellSize.y) * 0.7f;
         float size = Math.max(minSize, Math.min(maxSize, nutritionValue / 5f));
 
-        float x = position.x * cellSize + (cellSize - size) / 2;
-        float y = position.y * cellSize + (cellSize - size) / 2;
-
+        // Отрисовка еды по центру клетки
         shapeRenderer.setColor(0.2f, 0.8f, 0.2f, 0.8f);
-        shapeRenderer.circle(x + size/2, y + size/2, size/2);
+        shapeRenderer.circle(centerX, centerY, size/2);
     }
 }

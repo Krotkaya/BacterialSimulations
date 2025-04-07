@@ -5,11 +5,11 @@ import ru.example.mvvm.model.ModelContext;
 public class Bacteria extends BaseEntity {
     private Vector2 position;
     private float energy;
-    private float cellSize;
-    //хранить ширину и высоту в которую мы будем ее вписывать
+    private Vector2 cellSize;
 
 
-    public Bacteria(int id, Vector2 position, float energy,float cellSize) {
+
+    public Bacteria(int id, Vector2 position, float energy,Vector2 cellSize) {
         super(id);
         this.position = position;
         this.energy = energy;
@@ -30,7 +30,7 @@ public class Bacteria extends BaseEntity {
         this.position = position;
     }
 
-    public float getCellSize() {
+    public Vector2 getCellSize() {
         return cellSize;
     }
 }
