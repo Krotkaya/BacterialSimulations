@@ -27,7 +27,6 @@ public class ViewModelManager implements EventListener {
 
     public ViewModelManager(EventBus eventBus) {
         this.eventBus = eventBus;
-        // Подписываем менеджер на нужные события
         this.eventBus.subscribe("ENTITY_CREATED", this);
         this.eventBus.subscribe("ENTITY_REMOVED", this);
     }
@@ -46,7 +45,6 @@ public class ViewModelManager implements EventListener {
         }
     }
 
-    // Выносим логику биндинга в отдельный метод
     private void bindViewModel(Entity entity) {
         Supplier<ViewModel> viewModelFactory = viewModelsMapping.get(entity.getClass());
         if (viewModelFactory == null) {
@@ -54,22 +52,18 @@ public class ViewModelManager implements EventListener {
         }
 
         ViewModel viewModel = viewModelFactory.get();
-        // Передаем eventBus во ViewModel
         viewModel.setEventBus(eventBus);
 
         boundViewModels.put(entity.getId(), viewModel);
     }
 
-    // Выносим логику анбиндинга в отдельный метод
     private void unbindViewModel(Entity entity) {
         ViewModel viewModel = boundViewModels.remove(entity.getId());
-        // Отписываем ViewModel от событий при удалении
         if (viewModel instanceof EventListener) {
             eventBus.unsubscribe("WINDOW_RESIZED", (EventListener) viewModel);
         }
     }
 
-    // Модифицируем метод updateViewModelBounds
     public void updateViewModelBounds(List<Entity> addedEntities, List<Entity> removedEntities) {
         for (Entity entity : removedEntities) {
             eventBus.publish(new Event("ENTITY_REMOVED", entity));
@@ -83,7 +77,6 @@ public class ViewModelManager implements EventListener {
      * Словарь ViewModel'ов, которые уже были сопоставлены конкретным игровым сущностям. Тип эквивалентен типу
      * Map[Integer, ViewModel], но не производит boxing для примитивного типа int.
      */
-    //private final IntMap<ViewModel> boundViewModels = new IntMap<>();
 
     /**
      * Регистрирует новую фабрику для конкретного типа игровых сущностей
@@ -179,14 +172,12 @@ public class ViewModelManager implements EventListener {
 //    }
 
     public void drawView(SpriteBatch spriteBatch, ShapeRenderer shapeRenderer) {
-        // Отрисовка сетки
         for (ViewModel viewModel : boundViewModels.values()) {
             if (viewModel instanceof GridViewModel) {
                 ((GridViewModel) viewModel).drawShape(shapeRenderer);
             }
         }
 
-        // Отрисовка остальных сущностей
         spriteBatch.begin();
         for (ViewModel viewModel : boundViewModels.values()) {
             if (!(viewModel instanceof GridViewModel)) {

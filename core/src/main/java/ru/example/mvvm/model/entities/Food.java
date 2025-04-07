@@ -8,7 +8,6 @@ public class Food extends BaseEntity {
     private final Vector2 position;
     private final float nutritionValue;
     private Vector2 cellSize;
-    private static final float MIN_SIZE_RATIO = 0.3f; // Минимум 30% от клетки
 
     public Food(int id, Vector2 position, float nutritionValue, Vector2 cellSize) {
         super(id);

@@ -24,7 +24,7 @@ public class SimpleEventBus implements EventBus {
 
     @Override
     public void publish(Event event) {
-        List<EventListener> eventListeners = listeners.get(event.getType()); // Используем getType() вместо type()
+        List<EventListener> eventListeners = listeners.get(event.getType());
         if (eventListeners != null) {
             for (EventListener listener : eventListeners) {
                 listener.handleEvent(event);

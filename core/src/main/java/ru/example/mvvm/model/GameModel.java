@@ -17,18 +17,6 @@ public class GameModel {
         this.context = new ModelContext(0, 0, this);
     }
 
-    public void setCellSize(Vector2 cellSize) {
-        this.cellSize = cellSize;
-    }
-
-    public int getGridWidth() {
-        return GRID_WIDTH;
-    }
-
-    public int getGridHeight() {
-        return GRID_HEIGHT;
-    }
-
     public void setGameZoneSize(float width, float height) {
         this.context = new ModelContext(width, height, this);
         // Пересчитываем размер клетки на основе нового размера окна
@@ -66,9 +54,13 @@ public class GameModel {
             .findFirst()
             .orElse(null);
     }
-    //логику уносить в ModelContext, а тут данные и состояние
-    // проверить int векторы для сетки как вариант
+
     boolean isPositionAvailable(Vector2 position) {
+
+        if (position.x < 0 || position.x >= GRID_WIDTH ||
+            position.y < 0 || position.y >= GRID_HEIGHT) {
+            return false;
+        }
         return entities.stream()
             .filter(e -> e instanceof Bacteria || e instanceof Food)
             .noneMatch(e -> {

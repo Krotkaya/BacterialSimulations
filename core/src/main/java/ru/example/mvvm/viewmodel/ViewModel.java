@@ -36,5 +36,4 @@ public interface ViewModel {
     default void drawShape(ShapeRenderer shapeRenderer) { }
 
     default void setEventBus(EventBus eventBus) {}
-    default void handleEvent(Event event) {}
 }

@@ -35,20 +35,18 @@ public class BacteriaViewModel extends SpecifiedViewModel<Bacteria> implements E
     @Override
     protected void updateCasted(Bacteria entity) {
         this.position = entity.getPosition();
-       // float size = entity.getCellSize();
         this.cellSize = entity.getCellSize();
     }
 //контекст который будет передаваться в updateCasted, для grid установить размер клетки, а потом этот же контекст передаем дальше
     @Override
     public void drawShape(ShapeRenderer shapeRenderer) {
-        // Бактерия занимает 80% клетки
         float centerX = position.x * cellSize.x + cellSize.x / 2;
         float centerY = position.y * cellSize.y + cellSize.y / 2;
 
 
         float size = Math.min(cellSize.x, cellSize.y) * 0.8f;
 
-        shapeRenderer.setColor(0.8f, 0.2f, 0.2f, 1f);
+        shapeRenderer.setColor(0f, 0f, 1f, 1f);
         shapeRenderer.circle(centerX, centerY, size/2);
     }
 }

@@ -16,7 +16,6 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
     private float fieldHeight;
     private float screenWidth;
     private float screenHeight;
-
     //ширина высота в клетках, размеры окна
 
     @Override
@@ -35,8 +34,7 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
     private void handleWindowResized(Event event) {
         // Обработка события
     }
-
-    @Override
+    
     public void handleEvent(Event event) {
         if ("WINDOW_RESIZED".equals(event.getType())) {
             int[] dimensions = (int[]) event.getData();
@@ -52,8 +50,6 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
         this.gridColor = entity.getGridColor();
         this.fieldWidth = entity.getFieldWidth();
         this.fieldHeight = entity.getFieldHeight();
-        //здесь считываем актуальные размеры окна
-
     }
 
     public void drawShape(ShapeRenderer shapeRenderer) {
@@ -62,17 +58,14 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(gridColor);
 
-        // Рассчитываем масштаб для координат
         float scaleX = screenWidth / fieldWidth;
         float scaleY = screenHeight / fieldHeight;
 
-        // Рисуем вертикальные линии
         for (float x = 0; x <= fieldWidth; x += cellSize) {
             float screenX = x * scaleX;
             shapeRenderer.line(screenX, 0, screenX, screenHeight);
         }
 
-        // Рисуем горизонтальные линии
         for (float y = 0; y <= fieldHeight; y += cellSize) {
             float screenY = y * scaleY;
             shapeRenderer.line(0, screenY, screenWidth, screenY);
@@ -80,24 +73,4 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
 
         shapeRenderer.end();
     }
-
-//    public void drawShape(ShapeRenderer shapeRenderer, float screenWidth, float screenHeight) {
-//        if (cellSize <= 0) return;
-////Проверить, косяк тут!!!
-//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-//        shapeRenderer.setColor(gridColor);
-//
-//        for (float x = 0; x <= fieldWidth; x += cellSize) {
-//            float screenX = x * (screenWidth / fieldWidth);
-//            shapeRenderer.line(screenX, 0, screenX, screenHeight);
-//        }
-//
-//        for (float y = 0; y <= fieldHeight; y += cellSize) {
-//            float screenY = y * (screenHeight / fieldHeight);
-//            shapeRenderer.line(0, screenY, screenWidth, screenY);
-//        }
-//
-//
-//        shapeRenderer.end();
-//    }
 }

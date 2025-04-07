@@ -8,8 +8,6 @@ public class Event {
         this.type = type;
         this.data = data;
     }
-
-    // Добавляем геттеры
     public String getType() {
         return type;
     }

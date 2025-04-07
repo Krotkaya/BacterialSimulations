@@ -19,22 +19,6 @@ public class ModelContext {
         this.gameModel = gameModel;
     }
 
-    public float getGameZoneWidth() {
-        return gameZoneWidth;
-    }
-
-    public float getGameZoneHeight() {
-        return gameZoneHeight;
-    }
-
-    public void removeEntity(Entity entity) {
-        gameModel.removeEntity(entity);
-    }
-
-    public Food getFoodAt(Vector2 position) {
-        return gameModel.getFoodAt(position);
-    }
-
     public boolean isPositionAvailable(Vector2 position) {
         return gameModel.isPositionAvailable(position);
     }
