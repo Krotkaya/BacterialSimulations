@@ -10,9 +10,14 @@ public class GameModel {
     private final List<Entity> entities = new ArrayList<>();
     private final AtomicInteger idCounter = new AtomicInteger(1);
     private ModelContext context;
+    private float cellSize = 50f;
 
     public GameModel() {
         this.context = new ModelContext(0, 0, this);
+    }
+
+    public void setCellSize(float cellSize) {
+        this.cellSize = cellSize;
     }
 
     public void setGameZoneSize(float width, float height) {
@@ -50,7 +55,7 @@ public class GameModel {
             .findFirst()
             .orElse(null);
     }
-//логику уносить в ModelContext, а тут данные и состояние
+    //логику уносить в ModelContext, а тут данные и состояние
     // проверить int векторы для сетки как вариант
     boolean isPositionAvailable(Vector2 position) {
         return entities.stream()

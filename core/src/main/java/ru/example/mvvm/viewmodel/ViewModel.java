@@ -3,6 +3,8 @@ package ru.example.mvvm.viewmodel;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import ru.example.mvvm.eventbus.Event;
+import ru.example.mvvm.eventbus.EventBus;
 import ru.example.mvvm.model.Entity;
 
 /**
@@ -15,6 +17,7 @@ public interface ViewModel {
      * Возвращает класс сущностей модели, для которых предназначен данный контроллер
      */
     Class<? extends Entity> getTargetEntityClass();
+
 
     /**
      * Обновляет внутреннее состояния контроллера перед отрисовкой
@@ -31,4 +34,7 @@ public interface ViewModel {
      * Отрисовка геометрических фигур контроллера
      */
     default void drawShape(ShapeRenderer shapeRenderer) { }
+
+    default void setEventBus(EventBus eventBus) {}
+    default void handleEvent(Event event) {}
 }

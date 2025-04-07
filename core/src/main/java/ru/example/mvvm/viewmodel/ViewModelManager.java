@@ -9,22 +9,81 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.IntMap;
 
+import ru.example.mvvm.eventbus.Event;
+import ru.example.mvvm.eventbus.EventBus;
+import ru.example.mvvm.eventbus.EventListener;
 import ru.example.mvvm.model.Entity;
-import ru.example.mvvm.viewmodel.viewmodels.BackgroundViewModel;
+import ru.example.mvvm.viewmodel.viewmodels.GridViewModel;
 
 /**
  * Менеджер работы всей {@link ViewModel} части игры. Производит биндинг контроллеров отображения для каждой сущности
  * в игре. Также управляет обновлением состояния всех забиндженых ViewModel'ов и их отрисовкой
  */
-public class ViewModelManager {
+public class ViewModelManager implements EventListener {
     /** Словарь фабрик ViewModel'ей. Позволяет автоматически собирать ViewModel для новой игровой сущности */
     private final Map<Class<? extends Entity>, Supplier<ViewModel>> viewModelsMapping = new HashMap<>();
+    private final IntMap<ViewModel> boundViewModels = new IntMap<>();
+    private final EventBus eventBus;
 
+    public ViewModelManager(EventBus eventBus) {
+        this.eventBus = eventBus;
+        // Подписываем менеджер на нужные события
+        this.eventBus.subscribe("ENTITY_CREATED", this);
+        this.eventBus.subscribe("ENTITY_REMOVED", this);
+    }
+
+    @Override
+    public void handleEvent(Event event) {
+        switch (event.getType()) {
+            case "ENTITY_CREATED":
+                Entity createdEntity = (Entity) event.getData();
+                bindViewModel(createdEntity);
+                break;
+            case "ENTITY_REMOVED":
+                Entity removedEntity = (Entity) event.getData();
+                unbindViewModel(removedEntity);
+                break;
+        }
+    }
+
+    // Выносим логику биндинга в отдельный метод
+    private void bindViewModel(Entity entity) {
+        Supplier<ViewModel> viewModelFactory = viewModelsMapping.get(entity.getClass());
+        if (viewModelFactory == null) {
+            throw new IllegalArgumentException("Unregistered view model factory for entity type: " + entity.getClass());
+        }
+
+        ViewModel viewModel = viewModelFactory.get();
+        // Передаем eventBus во ViewModel
+        viewModel.setEventBus(eventBus);
+
+        boundViewModels.put(entity.getId(), viewModel);
+    }
+
+    // Выносим логику анбиндинга в отдельный метод
+    private void unbindViewModel(Entity entity) {
+        ViewModel viewModel = boundViewModels.remove(entity.getId());
+        // Отписываем ViewModel от событий при удалении
+        if (viewModel instanceof EventListener) {
+            eventBus.unsubscribe("WINDOW_RESIZED", (EventListener) viewModel);
+        }
+    }
+
+    // Модифицируем метод updateViewModelBounds
+    public void updateViewModelBounds(List<Entity> addedEntities, List<Entity> removedEntities) {
+        for (Entity entity : removedEntities) {
+            eventBus.publish(new Event("ENTITY_REMOVED", entity));
+        }
+
+        for (Entity entity : addedEntities) {
+            eventBus.publish(new Event("ENTITY_CREATED", entity));
+        }
+    }
     /**
      * Словарь ViewModel'ов, которые уже были сопоставлены конкретным игровым сущностям. Тип эквивалентен типу
      * Map[Integer, ViewModel], но не производит boxing для примитивного типа int.
      */
-    private final IntMap<ViewModel> boundViewModels = new IntMap<>();
+    //private final IntMap<ViewModel> boundViewModels = new IntMap<>();
 
     /**
      * Регистрирует новую фабрику для конкретного типа игровых сущностей
@@ -42,29 +101,30 @@ public class ViewModelManager {
      * @param addedEntities все сущности, которые были добавлены в текущем игровом цикле
      * @param removedEntities все сущности, которые были удалены в текущем игровом цикле
      */
-    public void updateViewModelBounds(List<Entity> addedEntities, List<Entity> removedEntities) {
-        unbind(removedEntities);
-
-        for (Entity addedEntity : addedEntities) {
-            int addedEntityId = addedEntity.getId();
-            Supplier<ViewModel> viewModelFactory = viewModelsMapping.get(addedEntity.getClass());
-            if (viewModelFactory == null) {
-                //Если хотя бы для одной сущности не получилось создать ViewModel - откатываем всю пачку созданных
-                unbind(addedEntities);
-                throw new IllegalArgumentException("Unregistered view model factory for entity type: " + addedEntity.getClass());
-            }
-
-            ViewModel bindedViewModel = viewModelFactory.get();
-            ViewModel alreadyBoundViewModel = boundViewModels.put(addedEntityId, bindedViewModel);
-
-            if (alreadyBoundViewModel != null) {
-                //Если хотя бы у одной сущности уже была ViewModel - откатываем всю пачку созданных
-                unbind(addedEntities);
-                throw new IllegalArgumentException("Entity '%s' has view model already. Old: %s. New: %s. Entity: %s"
-                    .formatted(addedEntityId, alreadyBoundViewModel, bindedViewModel, addedEntity));
-            }
-        }
-    }
+//Код Федора
+//    public void updateViewModelBounds(List<Entity> addedEntities, List<Entity> removedEntities) {
+//        unbind(removedEntities);
+//
+//        for (Entity addedEntity : addedEntities) {
+//            int addedEntityId = addedEntity.getId();
+//            Supplier<ViewModel> viewModelFactory = viewModelsMapping.get(addedEntity.getClass());
+//            if (viewModelFactory == null) {
+//                //Если хотя бы для одной сущности не получилось создать ViewModel - откатываем всю пачку созданных
+//                unbind(addedEntities);
+//                throw new IllegalArgumentException("Unregistered view model factory for entity type: " + addedEntity.getClass());
+//            }
+//
+//            ViewModel bindedViewModel = viewModelFactory.get();
+//            ViewModel alreadyBoundViewModel = boundViewModels.put(addedEntityId, bindedViewModel);
+//
+//            if (alreadyBoundViewModel != null) {
+//                //Если хотя бы у одной сущности уже была ViewModel - откатываем всю пачку созданных
+//                unbind(addedEntities);
+//                throw new IllegalArgumentException("Entity '%s' has view model already. Old: %s. New: %s. Entity: %s"
+//                    .formatted(addedEntityId, alreadyBoundViewModel, bindedViewModel, addedEntity));
+//            }
+//        }
+//    }
 
     /**
      * Отвязываем ViewModel от каждой сущности из списка
@@ -94,16 +154,42 @@ public class ViewModelManager {
      * @param screenWidth ширина экрана для отрисовки фона
      * @param screenHeight высота экрана для отрисовки фона
      */
-    public void drawView(SpriteBatch spriteBatch, ShapeRenderer shapeRenderer, float screenWidth, float screenHeight) {
+//    public void drawView(SpriteBatch spriteBatch, ShapeRenderer shapeRenderer, float screenWidth, float screenHeight) {
+//        for (ViewModel viewModel : boundViewModels.values()) {
+//            if (viewModel instanceof GridViewModel) {
+//                ((GridViewModel) viewModel).drawShape(shapeRenderer, screenWidth, screenHeight);
+//            }
+//        }
+//
+//        spriteBatch.begin();
+//        for (ViewModel viewModel : boundViewModels.values()) {
+//            if (!(viewModel instanceof GridViewModel)) {
+//                viewModel.drawSprite(spriteBatch);
+//            }
+//        }
+//        spriteBatch.end();
+//
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+//        for (ViewModel viewModel : boundViewModels.values()) {
+//            if (!(viewModel instanceof GridViewModel)) {
+//                viewModel.drawShape(shapeRenderer);
+//            }
+//        }
+//        shapeRenderer.end();
+//    }
+
+    public void drawView(SpriteBatch spriteBatch, ShapeRenderer shapeRenderer) {
+        // Отрисовка сетки
         for (ViewModel viewModel : boundViewModels.values()) {
-            if (viewModel instanceof BackgroundViewModel) {
-                ((BackgroundViewModel) viewModel).drawShape(shapeRenderer, screenWidth, screenHeight);
+            if (viewModel instanceof GridViewModel) {
+                ((GridViewModel) viewModel).drawShape(shapeRenderer);
             }
         }
 
+        // Отрисовка остальных сущностей
         spriteBatch.begin();
         for (ViewModel viewModel : boundViewModels.values()) {
-            if (!(viewModel instanceof BackgroundViewModel)) {
+            if (!(viewModel instanceof GridViewModel)) {
                 viewModel.drawSprite(spriteBatch);
             }
         }
@@ -111,7 +197,7 @@ public class ViewModelManager {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         for (ViewModel viewModel : boundViewModels.values()) {
-            if (!(viewModel instanceof BackgroundViewModel)) {
+            if (!(viewModel instanceof GridViewModel)) {
                 viewModel.drawShape(shapeRenderer);
             }
         }
