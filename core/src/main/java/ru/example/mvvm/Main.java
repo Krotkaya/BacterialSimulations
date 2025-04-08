@@ -29,8 +29,6 @@ public class Main extends ApplicationAdapter {
     private static final float CELL_SIZE = 50f; // Размер клетки
     private static final int GRID_WIDTH = 10;
     private static final int GRID_HEIGHT = 10;
-//ширину одной клетки из текущих параметров
-    //ширину окна текущего, поделить на количество клетко которые мы должны сделать
 
     @Override
     public void create() {

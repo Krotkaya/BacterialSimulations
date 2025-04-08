@@ -19,7 +19,6 @@ public class GameModel {
 
     public void setGameZoneSize(float width, float height) {
         this.context = new ModelContext(width, height, this);
-        // Пересчитываем размер клетки на основе нового размера окна
         this.cellSize.set(width / GRID_WIDTH, height / GRID_HEIGHT);
     }
 
