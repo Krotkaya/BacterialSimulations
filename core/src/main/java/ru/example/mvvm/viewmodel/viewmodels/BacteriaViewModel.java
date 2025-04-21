@@ -4,10 +4,12 @@ import com.badlogic.gdx.math.Vector2;
 import ru.example.mvvm.eventbus.Event;
 import ru.example.mvvm.eventbus.EventBus;
 import ru.example.mvvm.eventbus.EventListener;
+import ru.example.mvvm.eventbus.WindowResizedEvent;
 import ru.example.mvvm.model.entities.Bacteria;
 import ru.example.mvvm.viewmodel.SpecifiedViewModel;
 
-public class BacteriaViewModel extends SpecifiedViewModel<Bacteria> implements EventListener {
+public class BacteriaViewModel extends SpecifiedViewModel<Bacteria>
+    implements EventListener<WindowResizedEvent> {
     private Vector2 position;
     private Vector2 cellSize;
     private EventBus eventBus;
@@ -16,13 +18,12 @@ public class BacteriaViewModel extends SpecifiedViewModel<Bacteria> implements E
     @Override
     public void setEventBus(EventBus eventBus) {
         this.eventBus = eventBus;
-        this.eventBus.subscribe("WINDOW_RESIZED", this);
+        eventBus.subscribe(WindowResizedEvent.class, this);
     }
 
     @Override
-    public void handleEvent(Event event) {
-        if ("WINDOW_RESIZED".equals(event.getType())) {
-        }
+    public void handleEvent(WindowResizedEvent event) {
+        // здесь можно, например, обновить cellSize, если она зависит от экрана
     }
 
 
@@ -47,5 +48,10 @@ public class BacteriaViewModel extends SpecifiedViewModel<Bacteria> implements E
 
         shapeRenderer.setColor(0f, 0f, 1f, 1f);
         shapeRenderer.circle(centerX, centerY, size/2);
+    }
+
+    @Override
+    public int getDrawPriority() {
+        return 5;
     }
 }

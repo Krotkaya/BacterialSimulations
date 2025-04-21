@@ -5,10 +5,11 @@ import com.badlogic.gdx.math.Vector2;
 import ru.example.mvvm.eventbus.Event;
 import ru.example.mvvm.eventbus.EventBus;
 import ru.example.mvvm.eventbus.EventListener;
+import ru.example.mvvm.eventbus.WindowResizedEvent;
 import ru.example.mvvm.model.entities.Food;
 import ru.example.mvvm.viewmodel.SpecifiedViewModel;
 
-public class FoodViewModel extends SpecifiedViewModel<Food> implements EventListener {
+public class FoodViewModel extends SpecifiedViewModel<Food> implements EventListener<WindowResizedEvent> {
     private Vector2 position;
     private float nutritionValue;
     private Vector2 cellSize;
@@ -17,14 +18,13 @@ public class FoodViewModel extends SpecifiedViewModel<Food> implements EventList
     @Override
     public void setEventBus(EventBus eventBus) {
         this.eventBus = eventBus;
-        this.eventBus.subscribe("WINDOW_RESIZED", this);
+        this.eventBus.subscribe(WindowResizedEvent.class, this);
     }
 
     @Override
-    public void handleEvent(Event event) {
-        if ("WINDOW_RESIZED".equals(event.getType())) {
-            // Размер клетки будет обновляться через updateCasted
-        }
+    public void handleEvent(WindowResizedEvent event) {
+        // Handle window resize if needed
+        // Cell size will be updated through updateCasted
     }
 
     @Override
@@ -50,5 +50,10 @@ public class FoodViewModel extends SpecifiedViewModel<Food> implements EventList
 
         shapeRenderer.setColor(0.2f, 0.8f, 0.2f, 0.8f);
         shapeRenderer.circle(centerX, centerY, size/2);
+    }
+
+    @Override
+    public int getDrawPriority() {
+        return 1;
     }
 }

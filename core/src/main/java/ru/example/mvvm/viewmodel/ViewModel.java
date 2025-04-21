@@ -36,4 +36,8 @@ public interface ViewModel {
     default void drawShape(ShapeRenderer shapeRenderer) { }
 
     default void setEventBus(EventBus eventBus) {}
+
+    default int getDrawPriority() {
+        return 0;
+    }
 }

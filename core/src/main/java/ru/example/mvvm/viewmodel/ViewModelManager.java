@@ -1,17 +1,13 @@
 package ru.example.mvvm.viewmodel;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.IntMap;
 
-import ru.example.mvvm.eventbus.Event;
-import ru.example.mvvm.eventbus.EventBus;
+import ru.example.mvvm.eventbus.*;
 import ru.example.mvvm.eventbus.EventListener;
 import ru.example.mvvm.model.Entity;
 import ru.example.mvvm.viewmodel.viewmodels.GridViewModel;
@@ -20,31 +16,35 @@ import ru.example.mvvm.viewmodel.viewmodels.GridViewModel;
  * Менеджер работы всей {@link ViewModel} части игры. Производит биндинг контроллеров отображения для каждой сущности
  * в игре. Также управляет обновлением состояния всех забиндженых ViewModel'ов и их отрисовкой
  */
-public class ViewModelManager implements EventListener {
-    /** Словарь фабрик ViewModel'ей. Позволяет автоматически собирать ViewModel для новой игровой сущности */
+public class ViewModelManager implements EventListener<Event> {
+
     private final Map<Class<? extends Entity>, Supplier<ViewModel>> viewModelsMapping = new HashMap<>();
     private final IntMap<ViewModel> boundViewModels = new IntMap<>();
     private final EventBus eventBus;
-//сделать метод getallviewmodels, который получается из boundViewModels все values и сам их соритрует и вохзвращает итог
-// вместо intMap сделаем интерфейс SortedMap и у него есть разные реализации, берем например treemap, ему передаем comparator который сравнивает сущности по приоритетам. Можно использовать встроенный класс Comparator
-//Comparator.comparingInt(obj -> obj.priority) из моей вьюмодели
+
     public ViewModelManager(EventBus eventBus) {
         this.eventBus = eventBus;
-        this.eventBus.subscribe("ENTITY_CREATED", this);
-        this.eventBus.subscribe("ENTITY_REMOVED", this);
+        this.eventBus.subscribe(EntityCreatedEvent.class, e -> handleEvent(e));
+        this.eventBus.subscribe(EntityRemovedEvent.class, e -> handleEvent(e));
+        this.eventBus.subscribe(WindowResizedEvent.class, e -> handleEvent(e));
+
     }
 
     @Override
     public void handleEvent(Event event) {
-        switch (event.getType()) {
-            case "ENTITY_CREATED":
-                Entity createdEntity = (Entity) event.getData();
-                bindViewModel(createdEntity);
-                break;
-            case "ENTITY_REMOVED":
-                Entity removedEntity = (Entity) event.getData();
-                unbindViewModel(removedEntity);
-                break;
+        if (event instanceof EntityCreatedEvent created) {
+            bindViewModel(created.entity());
+        } else if (event instanceof EntityRemovedEvent removed) {
+            unbindViewModel(removed.entity());
+        } else if (event instanceof WindowResizedEvent resized) {
+            // broadcast to all view models
+            for (ViewModel vm : boundViewModels.values()) {
+                if (vm instanceof EventListener<?>) {
+                    @SuppressWarnings("unchecked")
+                    EventListener<WindowResizedEvent> listener = (EventListener<WindowResizedEvent>) vm;
+                    listener.handleEvent(resized);
+                }
+            }
         }
     }
 
@@ -56,24 +56,27 @@ public class ViewModelManager implements EventListener {
 
         ViewModel viewModel = viewModelFactory.get();
         viewModel.setEventBus(eventBus);
-
         boundViewModels.put(entity.getId(), viewModel);
     }
 
     private void unbindViewModel(Entity entity) {
         ViewModel viewModel = boundViewModels.remove(entity.getId());
         if (viewModel instanceof EventListener) {
-            eventBus.unsubscribe("WINDOW_RESIZED", (EventListener) viewModel);
+            // Need to properly handle unsubscription for all event types
+            // This is a simplified version - you might need to track all subscribed event types
+            if (viewModel instanceof EventListener<?>) {
+                eventBus.unsubscribe(WindowResizedEvent.class, (EventListener<WindowResizedEvent>) viewModel);
+            }
         }
     }
 
     public void updateViewModelBounds(List<Entity> addedEntities, List<Entity> removedEntities) {
         for (Entity entity : removedEntities) {
-            eventBus.publish(new Event("ENTITY_REMOVED", entity));
+            eventBus.publish(new EntityRemovedEvent(entity));
         }
 
         for (Entity entity : addedEntities) {
-            eventBus.publish(new Event("ENTITY_CREATED", entity));
+            eventBus.publish(new EntityCreatedEvent(entity));
         }
     }
 
@@ -83,59 +86,56 @@ public class ViewModelManager implements EventListener {
         }
     }
 
-    private void unbind(List<Entity> entities) {
-        for (Entity removedEntity : entities) {
-            boundViewModels.remove(removedEntity.getId());
-        }
-    }
-
     public void updateViewModels(List<Entity> entities) {
         for (Entity entity : entities) {
             ViewModel viewModel = boundViewModels.get(entity.getId());
             if (viewModel == null) continue;
-
             viewModel.update(entity);
         }
     }
 
     public void drawView(SpriteBatch spriteBatch, ShapeRenderer shapeRenderer) {
-        for (ViewModel viewModel : boundViewModels.values()) {
-            if (viewModel instanceof GridViewModel) {
-                ((GridViewModel) viewModel).drawShape(shapeRenderer);
-            }
+        // Create a list from IntMap values
+        List<ViewModel> sortedViewModels = new ArrayList<>();
+        for (ViewModel vm : boundViewModels.values()) {
+            sortedViewModels.add(vm);
         }
 
-        spriteBatch.begin();
-        for (ViewModel viewModel : boundViewModels.values()) {
-            if (!(viewModel instanceof GridViewModel)) {
-                viewModel.drawSprite(spriteBatch);
-            }
-        }
-        spriteBatch.end();
+        // Sort by draw priority
+        sortedViewModels.sort(Comparator.comparingInt(ViewModel::getDrawPriority));
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);//тут можно заменить на друго тип примитивов вместо линии
-        for (ViewModel viewModel : boundViewModels.values()) {
+        // Draw filled shapes (except Grid)
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        for (ViewModel viewModel : sortedViewModels) {
             if (!(viewModel instanceof GridViewModel)) {
                 viewModel.drawShape(shapeRenderer);
             }
         }
         shapeRenderer.end();
-    }//можно задать приоритет отрисовки, чтобы у грида он был выше, всем viewmodel дать метод
 
-    /**
-     * Получение ViewModel по ID сущности
-     * @param entityId ID сущности
-     * @return ViewModel или null, если не найдена
-     */
+        // Draw Grid lines
+        for (ViewModel viewModel : sortedViewModels) {
+            if (viewModel instanceof GridViewModel) {
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+                ((GridViewModel) viewModel).drawShape(shapeRenderer);
+                shapeRenderer.end();
+            }
+        }
+
+        // Draw sprites
+        spriteBatch.begin();
+        for (ViewModel viewModel : sortedViewModels) {
+            if (!(viewModel instanceof GridViewModel)) {
+                viewModel.drawSprite(spriteBatch);
+            }
+        }
+        spriteBatch.end();
+    }
+
     public ViewModel getViewModel(int entityId) {
         return boundViewModels.get(entityId);
     }
 
-    /**
-     * Получение ViewModel по сущности
-     * @param entity сущность
-     * @return ViewModel или null, если не найдена
-     */
     public ViewModel getViewModel(Entity entity) {
         return boundViewModels.get(entity.getId());
     }

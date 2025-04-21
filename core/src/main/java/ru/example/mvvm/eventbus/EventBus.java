@@ -2,10 +2,7 @@
 package ru.example.mvvm.eventbus;
 
 public interface EventBus {
-    void subscribe(String eventType, EventListener listener);
-    void unsubscribe(String eventType, EventListener listener);
-    //    String eventType -> Class<? extend Event>
-    //String eventType будут не строковые а специального класса
-    //record более простой способ определить какие-то данные
+    <T extends Event> void subscribe(Class<T> eventType, EventListener<T> listener);
+    <T extends Event> void unsubscribe(Class<T> eventType, EventListener<T> listener);
     void publish(Event event);
 }

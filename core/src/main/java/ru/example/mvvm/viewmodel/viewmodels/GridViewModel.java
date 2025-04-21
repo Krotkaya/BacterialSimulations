@@ -4,11 +4,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import ru.example.mvvm.eventbus.Event;
 import ru.example.mvvm.eventbus.EventBus;
+import ru.example.mvvm.eventbus.EventListener;
+import ru.example.mvvm.eventbus.WindowResizedEvent;
 import ru.example.mvvm.model.entities.Grid;
 import ru.example.mvvm.viewmodel.SpecifiedViewModel;
 import ru.example.mvvm.viewmodel.ViewModel;
 
-public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel {
+public class GridViewModel extends SpecifiedViewModel<Grid> implements EventListener<WindowResizedEvent> {
     private EventBus eventBus;
     private float cellSize;
     private Color gridColor;
@@ -26,21 +28,15 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
     @Override
     public void setEventBus(EventBus eventBus) {
         this.eventBus = eventBus;
-        this.eventBus.subscribe("WINDOW_RESIZED", this::handleWindowResized);
+        this.eventBus.subscribe(WindowResizedEvent.class, this);
         this.screenWidth = Gdx.graphics.getWidth();
         this.screenHeight = Gdx.graphics.getHeight();
     }
 
-    private void handleWindowResized(Event event) {
-        // Обработка события
-    }
-
-    public void handleEvent(Event event) {
-        if ("WINDOW_RESIZED".equals(event.getType())) {
-            int[] dimensions = (int[]) event.getData();
-            this.screenWidth = dimensions[0];
-            this.screenHeight = dimensions[1];
-        }
+    @Override
+    public void handleEvent(WindowResizedEvent event) {
+        this.screenWidth = event.width();
+        this.screenHeight = event.height();
     }
 
 
@@ -74,5 +70,10 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
 
         shapeRenderer.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+    }
+
+    @Override
+    public int getDrawPriority() {
+        return 10; // Higher priority - drawn last (on top)
     }
 }

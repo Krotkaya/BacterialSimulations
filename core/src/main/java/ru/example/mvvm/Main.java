@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import ru.example.mvvm.eventbus.Event;
 import ru.example.mvvm.eventbus.EventBus;
 import ru.example.mvvm.eventbus.SimpleEventBus;
+import ru.example.mvvm.eventbus.WindowResizedEvent;
 import ru.example.mvvm.model.GameModel;
 import ru.example.mvvm.model.entities.Grid;
 import ru.example.mvvm.model.entities.Bacteria;
@@ -38,7 +39,7 @@ public class Main extends ApplicationAdapter {
         Color gridColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 
         viewModelManager = new ViewModelManager(eventBus);
-        eventBus.subscribe("WINDOW_RESIZED", this::handleWindowResized);
+        eventBus.subscribe(WindowResizedEvent.class, this::handleWindowResized);
         viewModelManager.addViewModelMapping(Grid.class, () -> new GridViewModel());
         viewModelManager.addViewModelMapping(Bacteria.class, BacteriaViewModel::new);
         viewModelManager.addViewModelMapping(Food.class, FoodViewModel::new);
@@ -52,10 +53,10 @@ public class Main extends ApplicationAdapter {
         viewModelManager.updateViewModelBounds(gameModel.getEntities(), List.of());
     }
 
-    private void handleWindowResized(Event event) {
-        int[] dimensions = (int[]) event.getData();
-        gameModel.setGameZoneSize(dimensions[0], dimensions[1]);
+    private void handleWindowResized(WindowResizedEvent event) {
+        gameModel.setGameZoneSize(event.width(), event.height());
     }
+
 
     private void spawnInitialEntities() {
         Vector2 cellSize = new Vector2(
@@ -109,6 +110,6 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
-        eventBus.publish(new Event("WINDOW_RESIZED", new int[]{width, height}));
+        eventBus.publish(new WindowResizedEvent(width, height));
     }
 }

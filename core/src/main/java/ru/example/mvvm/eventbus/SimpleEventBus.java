@@ -7,24 +7,25 @@ import java.util.List;
 import java.util.Map;
 
 public class SimpleEventBus implements EventBus {
-    private final Map<String, List<EventListener>> listeners = new HashMap<>();
+    private final Map<Class<? extends Event>, List<EventListener<?>>> listeners = new HashMap<>();
 
     @Override
-    public void subscribe(String eventType, EventListener listener) {
+    public <T extends Event> void subscribe(Class<T> eventType, EventListener<T> listener) {
         listeners.computeIfAbsent(eventType, k -> new ArrayList<>()).add(listener);
     }
 
     @Override
-    public void unsubscribe(String eventType, EventListener listener) {
-        List<EventListener> eventListeners = listeners.get(eventType);
+    public <T extends Event> void unsubscribe(Class<T> eventType, EventListener<T> listener) {
+        List<EventListener<?>> eventListeners = listeners.get(eventType);
         if (eventListeners != null) {
             eventListeners.remove(listener);
         }
     }
 
     @Override
-    public void publish(Event event) {//беру ивент достаю класс и все остальное также как было
-        List<EventListener> eventListeners = listeners.get(event.getType());
+    @SuppressWarnings("unchecked")
+    public void publish(Event event) {
+        List<EventListener<?>> eventListeners = listeners.get(event.getClass());
         if (eventListeners != null) {
             for (EventListener listener : eventListeners) {
                 listener.handleEvent(event);
