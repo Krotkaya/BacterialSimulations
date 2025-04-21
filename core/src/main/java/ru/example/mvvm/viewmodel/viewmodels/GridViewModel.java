@@ -34,7 +34,7 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
     private void handleWindowResized(Event event) {
         // Обработка события
     }
-    
+
     public void handleEvent(Event event) {
         if ("WINDOW_RESIZED".equals(event.getType())) {
             int[] dimensions = (int[]) event.getData();
@@ -50,11 +50,12 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
         this.gridColor = entity.getGridColor();
         this.fieldWidth = entity.getFieldWidth();
         this.fieldHeight = entity.getFieldHeight();
+        //считать размер клетки тут!!!
     }
 
     public void drawShape(ShapeRenderer shapeRenderer) {
         if (cellSize <= 0 || fieldWidth <= 0 || fieldHeight <= 0) return;
-
+        shapeRenderer.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(gridColor);
 
@@ -72,5 +73,6 @@ public class GridViewModel extends SpecifiedViewModel<Grid> implements ViewModel
         }
 
         shapeRenderer.end();
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
     }
 }

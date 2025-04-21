@@ -5,7 +5,12 @@ import ru.example.mvvm.model.ModelContext;
 public class Bacteria extends BaseEntity {
     private Vector2 position;
     private float energy;
-    private Vector2 cellSize;
+    private Vector2 cellSize;//ее переренсти в соответсвующие viewmodel для еды и бактерии
+
+//она должна знать про свои координаты внутри сетки, но не знать про размер клетки
+    //создать совй класс vector2Int чтобы вместо float хранить int координаты и закинуть в utils
+
+
 
 
 
@@ -14,6 +19,7 @@ public class Bacteria extends BaseEntity {
         this.position = position;
         this.energy = energy;
         this.cellSize = cellSize;
+
     }
 
     @Override
@@ -21,7 +27,7 @@ public class Bacteria extends BaseEntity {
         MoveDirection randomDirection = MoveDirection.getRandomDirection();
         context.moveBacteria(this, randomDirection);
     }
-
+//выделим отдельный интерфейс у MovableEntity которые могут двигаться, у него будет получение позиции и установка позиции.
     public Vector2 getPosition() {
         return position;
     }

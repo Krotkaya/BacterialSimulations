@@ -11,7 +11,7 @@ public class Grid extends BaseEntity {
     private Color gridColor;
     private float fieldWidth;
     private float fieldHeight;
-
+//размер ячеек должна быть не у сущности а у viewmodel
     public Grid(int id, float cellSize,Color gridColor,
                 float fieldWidth, float fieldHeight) {
         super(id);
@@ -24,11 +24,6 @@ public class Grid extends BaseEntity {
     public Color getGridColor() {
         return gridColor;
     }
-
-    //Gdx.graphics.getWidth(), Gdx.graphics.getHeight() вытаскиеваем текущие размеры окна, на этом этапе высчитать шаг для вертикальных и горизонтальных линий
-    //ввести шину (паттерн проектирования наблюдатель, viewModelContext позволяет публиковать события, на конкретные виды событий подписывать обработчиков), передаем при создании viewModel (viewModel инициализация и destroy)
-    //в джаве есть готовые реализации наблюдателя и наблюдаемого, если я его введу то это баллы за сложность будут
-    //альтернатива (не берем, делаем шину), контекст содержит только механизм публикации каких-то событий, в три этапа при создании, при удалении, и в петоде update (можем захотеть публиковать)
 
     @Override
     public void update(ModelContext context) { }

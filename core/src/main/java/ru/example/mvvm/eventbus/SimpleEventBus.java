@@ -23,7 +23,7 @@ public class SimpleEventBus implements EventBus {
     }
 
     @Override
-    public void publish(Event event) {
+    public void publish(Event event) {//беру ивент достаю класс и все остальное также как было
         List<EventListener> eventListeners = listeners.get(event.getType());
         if (eventListeners != null) {
             for (EventListener listener : eventListeners) {

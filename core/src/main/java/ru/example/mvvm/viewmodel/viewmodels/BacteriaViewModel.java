@@ -26,7 +26,6 @@ public class BacteriaViewModel extends SpecifiedViewModel<Bacteria> implements E
     }
 
 
-
     @Override
     public Class<Bacteria> getTargetEntityClass() {
         return Bacteria.class;

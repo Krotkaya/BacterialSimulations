@@ -1,5 +1,6 @@
 package ru.example.mvvm.viewmodel;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,9 @@ public class ViewModelManager implements EventListener {
     private final Map<Class<? extends Entity>, Supplier<ViewModel>> viewModelsMapping = new HashMap<>();
     private final IntMap<ViewModel> boundViewModels = new IntMap<>();
     private final EventBus eventBus;
-
+//сделать метод getallviewmodels, который получается из boundViewModels все values и сам их соритрует и вохзвращает итог
+// вместо intMap сделаем интерфейс SortedMap и у него есть разные реализации, берем например treemap, ему передаем comparator который сравнивает сущности по приоритетам. Можно использовать встроенный класс Comparator
+//Comparator.comparingInt(obj -> obj.priority) из моей вьюмодели
     public ViewModelManager(EventBus eventBus) {
         this.eventBus = eventBus;
         this.eventBus.subscribe("ENTITY_CREATED", this);
@@ -110,14 +113,14 @@ public class ViewModelManager implements EventListener {
         }
         spriteBatch.end();
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);//тут можно заменить на друго тип примитивов вместо линии
         for (ViewModel viewModel : boundViewModels.values()) {
             if (!(viewModel instanceof GridViewModel)) {
                 viewModel.drawShape(shapeRenderer);
             }
         }
         shapeRenderer.end();
-    }
+    }//можно задать приоритет отрисовки, чтобы у грида он был выше, всем viewmodel дать метод
 
     /**
      * Получение ViewModel по ID сущности
